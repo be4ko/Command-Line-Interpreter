@@ -1,7 +1,9 @@
 package org.example;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+
 public class Main {
     private Path currentDirectory;
 
@@ -10,7 +12,8 @@ public class Main {
     }
 
     public void cd(String path) {
-        Path newPath = currentDirectory.resolve(path); //Takes the path provided, and appends it to the current directory path
+        Path newPath = currentDirectory.resolve(path); // Takes the path provided, and appends it to the current
+                                                       // directory path
         if (Files.isDirectory(newPath)) {
             currentDirectory = newPath;
         } else {
@@ -30,8 +33,7 @@ public class Main {
     public String[] ls(String option) {
         File dir = currentDirectory.toFile();
         File[] filesArray;
-        switch (option)
-        {
+        switch (option) {
             case "-a":
                 filesArray = dir.listFiles();
                 break;
@@ -43,7 +45,7 @@ public class Main {
                 }
                 break;
 
-                // fix the defult case to match that it doesn't show files that starts with '.'
+            // fix the default case to match that it doesn't show files that starts with '.'
             default:
                 filesArray = dir.listFiles();
                 break;
@@ -59,10 +61,47 @@ public class Main {
         return fileNames;
     }
 
+    public void mv(List<File> sourceAndTarget) {
+        File targetFile = sourceAndTarget.getLast();
+
+        for (int i = 0; i < sourceAndTarget.size() - 1; i++) {
+            File sourceFile = sourceAndTarget.get(i);
+            if (!sourceFile.exists()) {
+                System.out.println("mv: cannot stat '" + sourceFile.getPath() + "': No such file or directory");
+                continue;
+            }
+            try {
+                if (targetFile.exists()) {
+                    if (targetFile.isDirectory()) {
+                        Path destination = Path.of(targetFile.getPath(), sourceFile.getName());
+                        Files.move(sourceFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        Files.move(sourceFile.toPath(), targetFile.toPath(),
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } else {
+                    Files.move(sourceFile.toPath(), targetFile.toPath());
+                }
+            } catch (Exception e) {
+                System.out.println("An error occurred while moving the file: " + e.getMessage());
+            }
+        }
+    }
+
+    public void rm(List<File> sourceAndTarget) {
+        for (int i = 0; i < sourceAndTarget.size() - 1; i++) {
+            File file = sourceAndTarget.get(i);
+            if (file.exists()) {
+                file.delete();
+            } else {
+                System.out.println("rm: failed to delete file: " + file.getName());
+            }
+        }
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         var cli = new Main();
-
         while (true) {
             System.out.print(cli.pwd() + "> ");
             String input = scanner.nextLine();
@@ -93,14 +132,37 @@ public class Main {
 
                 case "touch":
 
+                case "mv":
+                    if (command.length < 3) {
+                        System.out.println("Invalid command. Usage: mv <source> <target>");
+                        break;
+                    }
+                    List<File> sourceAndTarget = new ArrayList<>();
+                    for (int i = 1; i < command.length; i++) {
+                        File sourceFile = new File(command[i]);
+                        sourceAndTarget.add(sourceFile);
+                    }
+                    cli.mv(sourceAndTarget);
+                    break;
                 case "rm":
-
+                    if (command.length > 1) {
+                        sourceAndTarget = new ArrayList<>();
+                        for (int i = 1; i < command.length; i++) {
+                            File sourceFile = new File(command[i]);
+                            sourceAndTarget.add(sourceFile);
+                        }
+                        cli.rm(sourceAndTarget);
+                    } else {
+                        System.out.println("Missing argument for rm.");
+                    }
+                    break;
                 case "cat":
 
                 case "help":
 
                 case "exit":
-
+                    scanner.close();
+                    break;
                 default:
                     System.out.println("Error, False command");
                     break;
