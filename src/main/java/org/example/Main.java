@@ -89,13 +89,32 @@ public class Main {
     }
 
     public void rm(List<File> sourceAndTarget) {
-        for (int i = 0; i < sourceAndTarget.size() - 1; i++) {
+        for (int i = 0; i < sourceAndTarget.size(); i++) {
             File file = sourceAndTarget.get(i);
             if (file.exists()) {
                 file.delete();
             } else {
                 System.out.println("rm: failed to delete file: " + file.getName());
             }
+        }
+    }
+
+    public void touch(String filePath) {
+        File file = new File(filePath);
+        File parentDir = file.getParentFile();
+
+        if (parentDir != null && !parentDir.exists()) {
+            if (!parentDir.mkdirs()) {
+                System.out.println("Failed to create directory: " + parentDir.getPath());
+                return;
+            }
+        }
+        try {
+            if (!file.createNewFile()) {
+                System.out.println("File already exists: " + file.getPath());
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred while creating the file: " + e.getMessage());
         }
     }
 
@@ -131,7 +150,12 @@ public class Main {
                 case "rmdir":
 
                 case "touch":
-
+                    if (command.length > 1) {
+                        cli.touch(command[1]);
+                    } else {
+                        System.out.println("Missing argument for touch.");
+                    }
+                    break;
                 case "mv":
                     if (command.length < 3) {
                         System.out.println("Invalid command. Usage: mv <source> <target>");
@@ -162,7 +186,7 @@ public class Main {
 
                 case "exit":
                     scanner.close();
-                    break;
+                    return;
                 default:
                     System.out.println("Error, False command");
                     break;
