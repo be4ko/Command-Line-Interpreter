@@ -12,8 +12,8 @@ public class Main {
     }
 
     public void cd(String path) {
-        Path newPath = currentDirectory.resolve(path); // Takes the path provided, and appends it to the current
-                                                       // directory path
+        Path newPath = currentDirectory.resolve(path);
+
         if (Files.isDirectory(newPath)) {
             currentDirectory = newPath;
         } else {
@@ -27,7 +27,15 @@ public class Main {
 
     public String[] ls() {
         File dir = currentDirectory.toFile();
-        return dir.list();
+        File[] filesArray;
+        filesArray = dir.listFiles((file) -> !file.getName().startsWith("."));
+
+        assert filesArray != null;
+        String[] fileNames = new String[filesArray.length];
+        for (int i = 0; i < filesArray.length; i++) {
+            fileNames[i] = filesArray[i].getName();
+        }
+        return fileNames;
     }
 
     public String[] ls(String option) {
@@ -47,7 +55,7 @@ public class Main {
             default:
                 filesArray = dir.listFiles((file) -> !file.getName().startsWith("."));
                 if (filesArray != null) {
-                    Arrays.sort(filesArray); // Sort the visible files for consistency
+                    Arrays.sort(filesArray);
                 }
                 break;
         }
@@ -102,8 +110,7 @@ public class Main {
             File sourceFile = new File(command[i]);
             sourceAndTarget.add(sourceFile);
         }
-        for (int i = 0; i < sourceAndTarget.size(); i++) {
-            File file = sourceAndTarget.get(i);
+        for (File file : sourceAndTarget) {
             if (file.exists()) {
                 file.delete();
             } else {
