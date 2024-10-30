@@ -25,6 +25,44 @@ public class Main {
         return currentDirectory.toString();
     }
 
+    public boolean mkdir(String dirname) {
+        File newdir = new File(currentDirectory.toFile(), dirname);
+        if (newdir.exists()) {
+            System.out.println("Directory already exists: " + dirname);
+            return false;
+        }
+        boolean created = newdir.mkdir();
+        if (!created) {
+            System.out.println("Failed to create directory: " + dirname);
+        }
+        return created;
+    }
+
+    public boolean rmdir(String dirName) {
+        File dirToRemove = new File(currentDirectory.toFile(), dirName);
+
+        if (!dirToRemove.exists()) {
+            System.out.println("Directory does not exist: " + dirName);
+            return false;
+        }
+
+        if (!dirToRemove.isDirectory()) {
+            System.out.println("Not a directory: " + dirName);
+            return false;
+        }
+
+        if (dirToRemove.list().length > 0) {
+            System.out.println("Directory is not empty: " + dirName);
+            return false;
+        }
+
+        boolean deleted = dirToRemove.delete(); // .delete() deletes only if it's empty folder
+        if (!deleted) {
+            System.out.println("Failed to delete directory: " + dirName);
+        }
+        return deleted;
+    }
+
     public String[] ls() {
         File dir = currentDirectory.toFile();
         File[] filesArray;
@@ -174,8 +212,28 @@ public class Main {
                     break;
 
                 case "mkdir":
+                    if (command.length > 1) {
+                        if (cli.mkdir(command[1])) {
+                            System.out.println("Directory created successfully.");
+                        } else {
+                            System.out.println("Failed to create directory. It may already exist.");
+                        }
+                    } else {
+                        System.out.println("Missing argument for mkdir.");
+                    }
+                    break;
 
                 case "rmdir":
+                    if (command.length > 1) {
+                        if (cli.rmdir(command[1])) {
+                            System.out.println("Directory removed successfully.");
+                        } else {
+                            System.out.println("Failed to remove directory. It may not be empty or does not exist.");
+                        }
+                    } else {
+                        System.out.println("Missing argument for rmdir.");
+                    }
+                    break;
 
                 case "touch":
                     if (!(command.length > 1 && cli.touch(command[1]))) {
