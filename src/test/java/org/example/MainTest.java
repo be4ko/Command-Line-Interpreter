@@ -49,7 +49,30 @@ class MainTest {
         String[] files = cli.ls("-r");
         assertTrue(files.length > 0, "The ls command should return the list of files in the directory.");
         assertEquals(Arrays.toString(new String[]{"target","src", "pom.xml", ".idea",".gitignore", ".git" }), Arrays.toString(files), "The files should match the expected output.");
+    }
 
+    @Test
+    void testMkdir() throws IOException {
+        var cli = new Main();
+
+        String dirName = "testDir";
+        Path dirPath = Paths.get(dirName);
+
+        assertFalse(Files.exists(dirPath), "Directory should not exist before mkdir.");
+
+        assertTrue(cli.mkdir("testDir"), "mkdir should return true for a new directory.");
+
+        assertTrue(Files.exists(dirPath), "Directory should exist after mkdir.");
+    }
+
+    @Test
+    void testRmdir() throws IOException {
+        var cli = new Main();
+        cli.mkdir("testDir");
+        boolean result = cli.rmdir("testDir");
+
+        assertTrue(result, "rmdir should return true for an empty directory");
+        assertFalse(Files.exists(Paths.get("testDir")), "Directory should not exist after rmdir");
     }
 
     @Test
@@ -58,17 +81,7 @@ class MainTest {
         String currentPath = cli.pwd();
         assertEquals("C:\\Users\\Beeko\\Desktop\\Command-Line-Interpreter", currentPath);
     }
-
-    @AfterEach
-    void tearDown() throws IOException {
-        Path testDir = Paths.get("testDir");
-        if (Files.exists(testDir)) {
-            Files.walk(testDir)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-    }
+    
     @Test
     void testMv() throws IOException {
         var cli = new Main();
@@ -139,6 +152,30 @@ class MainTest {
         String filePath = "testDir/nonExistentDir/newFile.txt";
         assertTrue(cli.touch(filePath));
         assertTrue(Files.exists(Paths.get(filePath)));
+    }
+    
+    @AfterEach
+    void tearDown() throws IOException {
+        Path testDir = Paths.get("testDir");
+
+        if (Files.exists(testDir)) {
+            Files.walk(testDir)
+                    .sorted((a, b) -> b.compareTo(a))
+                    .map(Path::toFile)
+                    .forEach(file -> {
+                        if (file.exists()) {
+                            System.out.println("Deleting: " + file.getPath());
+                            file.delete();
+                        }
+                    });
+
+            if (Files.exists(testDir)) {
+                Files.delete(testDir);
+                System.out.println("Deleted testDir");
+            }
+        } else {
+            System.out.println("No testDir found to delete.");
+        }
     }
 
 }
