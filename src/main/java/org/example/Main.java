@@ -61,14 +61,19 @@ public class Main {
         return fileNames;
     }
 
-    public void mv(List<File> sourceAndTarget) {
+    public boolean mv(String[] command) {
+        List<File> sourceAndTarget = new ArrayList<>();
+        for (int i = 1; i < command.length; i++) {
+            File sourceFile = new File(command[i]);
+            sourceAndTarget.add(sourceFile);
+        }
         File targetFile = sourceAndTarget.getLast();
 
         for (int i = 0; i < sourceAndTarget.size() - 1; i++) {
             File sourceFile = sourceAndTarget.get(i);
             if (!sourceFile.exists()) {
                 System.out.println("mv: cannot stat '" + sourceFile.getPath() + "': No such file or directory");
-                continue;
+                return false;
             }
             try {
                 if (targetFile.exists()) {
@@ -84,38 +89,53 @@ public class Main {
                 }
             } catch (Exception e) {
                 System.out.println("An error occurred while moving the file: " + e.getMessage());
+                return false;
             }
         }
+        return true;
     }
 
-    public void rm(List<File> sourceAndTarget) {
+    public boolean rm(String[] command) {
+        List<File> sourceAndTarget = new ArrayList<>();
+        for (int i = 1; i < command.length; i++) {
+            File sourceFile = new File(command[i]);
+            sourceAndTarget.add(sourceFile);
+        }
         for (int i = 0; i < sourceAndTarget.size(); i++) {
             File file = sourceAndTarget.get(i);
             if (file.exists()) {
                 file.delete();
             } else {
                 System.out.println("rm: failed to delete file: " + file.getName());
+                return false;
             }
         }
+        return true;
     }
 
-    public void touch(String filePath) {
+    public boolean touch(String filePath) {
         File file = new File(filePath);
         File parentDir = file.getParentFile();
 
         if (parentDir != null && !parentDir.exists()) {
             if (!parentDir.mkdirs()) {
                 System.out.println("Failed to create directory: " + parentDir.getPath());
-                return;
+                return false;
             }
         }
+
         try {
-            if (!file.createNewFile()) {
-                System.out.println("File already exists: " + file.getPath());
+            if (file.exists()) {
+                return true;
+            } else if (!file.createNewFile()) {
+                System.out.println("File could not be created: " + file.getPath());
+                return false;
             }
         } catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
+            return false;
         }
+        return true;
     }
 
     public static void main(String[] args) {
@@ -150,9 +170,7 @@ public class Main {
                 case "rmdir":
 
                 case "touch":
-                    if (command.length > 1) {
-                        cli.touch(command[1]);
-                    } else {
+                    if (!(command.length > 1 && cli.touch(command[1]))) {
                         System.out.println("Missing argument for touch.");
                     }
                     break;
@@ -161,22 +179,10 @@ public class Main {
                         System.out.println("Invalid command. Usage: mv <source> <target>");
                         break;
                     }
-                    List<File> sourceAndTarget = new ArrayList<>();
-                    for (int i = 1; i < command.length; i++) {
-                        File sourceFile = new File(command[i]);
-                        sourceAndTarget.add(sourceFile);
-                    }
-                    cli.mv(sourceAndTarget);
+                    cli.mv(command);
                     break;
                 case "rm":
-                    if (command.length > 1) {
-                        sourceAndTarget = new ArrayList<>();
-                        for (int i = 1; i < command.length; i++) {
-                            File sourceFile = new File(command[i]);
-                            sourceAndTarget.add(sourceFile);
-                        }
-                        cli.rm(sourceAndTarget);
-                    } else {
+                    if (!(command.length > 1 && cli.rm(command))) {
                         System.out.println("Missing argument for rm.");
                     }
                     break;
