@@ -43,7 +43,7 @@ public class Main {
                 }
                 break;
 
-                // fix the defult case to match that it doesn't show files that starts with '.'
+                // fix the default case to match that it doesn't show files that starts with '.'
             default:
                 filesArray = dir.listFiles();
                 break;
