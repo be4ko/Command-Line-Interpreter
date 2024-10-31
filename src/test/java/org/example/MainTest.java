@@ -4,20 +4,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.*;
 import java.util.Arrays;
 
-
-
 class MainTest {
+    private static final Path TEST_DIR = Paths.get("testDir");
+    private static final Path TEST_FILE1 = TEST_DIR.resolve("testFile1.txt");
+    private static final Path TEST_FILE2 = TEST_DIR.resolve("testFile2.txt");
+    private static final Path NON_EXISTENT_FILE = TEST_DIR.resolve("nonExistent.txt");
 
-    @BeforeEach
-    void setUp() {
-        var cli = new Main();
-        // Set the current directory to the test directory where files are located
-        cli.cd(Paths.get("path/to/test/directory").toString()); // Convert Path to String
-    }
     @Test
     void testCd() {
         var cli = new Main();
@@ -30,7 +30,8 @@ class MainTest {
         var cli = new Main();
         String[] files = cli.ls();
         assertTrue(files.length > 0, "The ls command should return the list of files in the directory.");
-        assertEquals(Arrays.toString(new String[]{"pom.xml", "src","target"}), Arrays.toString(files), "The files should match the expected output.");
+        assertEquals(Arrays.toString(new String[] { "pom.xml", "src", "target" }), Arrays.toString(files),
+                "The files should match the expected output.");
     }
 
     @Test
@@ -38,7 +39,8 @@ class MainTest {
         var cli = new Main();
         String[] files = cli.ls("-a");
         assertTrue(files.length > 0, "The ls command should return the list of files in the directory.");
-        assertEquals(Arrays.toString(new String[]{".git", ".gitignore",".idea","pom.xml", "src","target"}), Arrays.toString(files), "The files should match the expected output.");
+        assertEquals(Arrays.toString(new String[] { ".git", ".gitignore", ".idea", "pom.xml", "src", "target" }),
+                Arrays.toString(files), "The files should match the expected output.");
     }
 
     @Test
@@ -46,7 +48,8 @@ class MainTest {
         var cli = new Main();
         String[] files = cli.ls("-r");
         assertTrue(files.length > 0, "The ls command should return the list of files in the directory.");
-        assertEquals(Arrays.toString(new String[]{"target","src", "pom.xml", ".idea",".gitignore", ".git" }), Arrays.toString(files), "The files should match the expected output.");
+        assertEquals(Arrays.toString(new String[] { "target", "src", "pom.xml", ".idea", ".gitignore", ".git" }),
+                Arrays.toString(files), "The files should match the expected output.");
     }
 
     @Test
@@ -79,7 +82,7 @@ class MainTest {
         String currentPath = cli.pwd();
         assertEquals("C:\\Users\\Beeko\\Desktop\\Command-Line-Interpreter", currentPath);
     }
-    
+
     @Test
     void testMv() throws IOException {
         var cli = new Main();
@@ -151,7 +154,81 @@ class MainTest {
         assertTrue(cli.touch(filePath));
         assertTrue(Files.exists(Paths.get(filePath)));
     }
-    
+
+    @Test
+    public void testCatMultipleFiles() throws IOException {
+        var cli = new Main();
+        Files.createDirectories(TEST_DIR);
+
+        // Create test files with content
+        try (BufferedWriter writer = Files.newBufferedWriter(TEST_FILE1)) {
+            writer.write("Content of testFile1");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(TEST_FILE2)) {
+            writer.write("Content of testFile2");
+        }
+        cli.cd(TEST_DIR.toString());
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStream));
+
+        cli.cat(TEST_FILE1.getFileName().toString(), TEST_FILE2.getFileName().toString());
+
+        // Verify output contains contents of both files
+        String expectedOutput = "Content of testFile1\r\nContent of testFile2\r\n";
+        assertEquals(expectedOutput, outputStream.toString());
+    }
+
+    @Test
+    public void testCatWithNonExistentFile() throws IOException {
+        var cli = new Main();
+        Files.createDirectories(TEST_DIR);
+
+        // Create test files with content
+        try (BufferedWriter writer = Files.newBufferedWriter(TEST_FILE1)) {
+            writer.write("Content of testFile1");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(TEST_FILE2)) {
+            writer.write("Content of testFile2");
+        }
+        cli.cd(TEST_DIR.toString());
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStream));
+
+        cli.cat(NON_EXISTENT_FILE.getFileName().toString());
+
+        // Verify output shows "No such file" for the non-existent file
+        String expectedOutput = "cat: nonExistent.txt: No such file\r\n";
+        assertEquals(expectedOutput, outputStream.toString());
+    }
+
+    @Test
+    public void testCatWithDirectory() throws IOException {
+        var cli = new Main();
+        Files.createDirectories(TEST_DIR);
+
+        // Create test files with content
+        try (BufferedWriter writer = Files.newBufferedWriter(TEST_FILE1)) {
+            writer.write("Content of testFile1");
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(TEST_FILE2)) {
+            writer.write("Content of testFile2");
+        }
+        Path subDir = Files.createDirectory(TEST_DIR.resolve("subDir"));
+
+        cli.cd(TEST_DIR.toString());
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outputStream));
+
+        cli.cat(subDir.getFileName().toString());
+
+        // Verify output shows "Is a directory" for the directory
+        String expectedOutput = "cat: subDir: Is a directory\r\n";
+        assertEquals(expectedOutput, outputStream.toString());
+    }
+
     @AfterEach
     void tearDown() throws IOException {
         Path testDir = Paths.get("testDir");
