@@ -26,17 +26,25 @@ public class Main {
         return currentDirectory.toString();
     }
 
-    public boolean mkdir(String dirname) {
-        File newDir = new File(currentDirectory.toFile(), dirname);
-        if (newDir.exists()) {
-            System.out.println("Directory already exists: " + dirname);
-            return false;
+    public boolean mkdir(String... dirPaths) {
+        boolean allCreated = true;
+
+        for (String path : dirPaths) {
+            File newDir = new File(currentDirectory.toFile(), path);
+
+            // Use mkdirs() to create any necessary parent directories
+            if (newDir.exists()) {
+                System.out.println("Directory already exists: " + path);
+                allCreated = false; // At least one directory already existed
+            } else if (newDir.mkdirs()) {
+                System.out.println("Directory created: " + path);
+            } else {
+                System.out.println("Failed to create directory: " + path);
+                allCreated = false; // At least one directory could not be created
+            }
         }
-        if (!newDir.mkdir()) {
-            System.out.println("Failed to create directory: " + dirname);
-            return false;
-        }
-        return true;
+
+        return allCreated;
     }
 
     public boolean rmdir(String dirName) {
@@ -61,6 +69,34 @@ public class Main {
 
     public String[] ls() {
         return listDirectory(false, false);
+    }
+
+    public void lstext(String[] command) {
+        var cli = new Main();
+        String option = command.length > 1 ? command[1] : "";
+        String[] lsOutput = cli.ls(option);
+
+        if (command.length >= 3
+                && (command[command.length - 2].equals(">") || command[command.length - 2].equals(">>"))) {
+            // Detect output redirection
+            String operator = command[command.length - 2];
+            String fileName = command[command.length - 1];
+            boolean append = operator.equals(">>");
+
+            try (BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(new File(cli.currentDirectory.toFile(), fileName), append))) {
+                for (String line : lsOutput) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+                System.out.println("Output written to " + fileName);
+            } catch (IOException e) {
+                System.out.println("Error: Unable to write to file " + fileName + ": " + e.getMessage());
+            }
+        } else {
+            // No redirection; print to console
+            System.out.println(String.join("\n", lsOutput));
+        }
     }
 
     public String[] ls(String option) {
@@ -204,15 +240,18 @@ public class Main {
 
             try {
                 switch (command[0]) {
+                    case "pwd":
+                        System.out.println(cli.pwd());
+                        break;
                     case "cd":
                         cli.cd(command.length > 1 ? command[1] : "");
                         break;
                     case "ls":
-                        System.out.println(String.join("\n", cli.ls(command.length > 1 ? command[1] : "")));
+                        cli.lstext(command);
                         break;
 
                     case "mkdir":
-                        System.out.println(cli.mkdir(command[1]) ? "Directory created." : "");
+                        cli.mkdir(Arrays.copyOfRange(command, 1, command.length));
                         break;
 
                     case "rmdir":
@@ -230,9 +269,10 @@ public class Main {
                     case "cat":
                         if (command.length > 1)
                             cli.cat(Arrays.copyOfRange(command, 1, command.length));
-                        else
+                        else {
                             scanner.hasNextLine();
-                        System.out.println(scanner.nextLine());
+                            System.out.println(scanner.nextLine());
+                        }
                         break;
                     case "help": {
                         if (command.length == 1)
