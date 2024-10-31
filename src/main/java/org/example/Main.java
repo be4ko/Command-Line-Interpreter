@@ -184,6 +184,30 @@ public class Main {
         return true;
     }
 
+    public void Help() {
+        System.out.println(HelpText());
+    }
+
+    public String HelpText() {
+        return """
+                Commands:
+                  help              Show this help message
+                  ls                List directory contents
+                  mv <source> <dest> Move or rename a file or directory
+                  rm <file>         Remove a file
+                  mkdir <dir>       Create a new directory
+                  rmdir <dir>       Remove an empty directory
+                  touch <file>      Create a new empty file or update a file's timestamp
+                  exit              Exit the application
+                """;
+    }
+
+    public void writeToFile(String fileName, boolean append) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, append))) {
+            writer.write(HelpText());
+        }
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         var cli = new Main();
@@ -255,7 +279,33 @@ public class Main {
                 case "cat":
 
                 case "help":
+                    if (command.length == 1) {
+                        cli.Help();
+                    } else if (command.length == 3) {
 
+                        String operator = command[1];
+                        String fileName = command[2];
+                        try {
+                            switch (operator) {
+                                case ">":
+                                    cli.writeToFile(fileName, false);
+                                    break;
+                                case ">>":
+                                    cli.writeToFile(fileName, true);
+                                    break;
+                                default:
+                                    System.out.println(
+                                            "Invalid syntax. Use 'help > filename', 'help >> filename'.");
+                            }
+                        } catch (Exception e) {
+                            System.out.println(e);
+                        }
+                    } else {
+
+                        System.out.println(
+                                "Invalid syntax. Use 'help > filename', 'help >> filename'.");
+                    }
+                    break;
                 case "exit":
                     scanner.close();
                     return;
