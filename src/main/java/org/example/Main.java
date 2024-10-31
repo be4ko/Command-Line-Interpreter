@@ -13,8 +13,11 @@ public class Main {
 
     public void cd(String path) {
         Path newPath = currentDirectory.resolve(path);
-
-        if (Files.isDirectory(newPath)) {
+        if (".".equals(path)){
+            Path parentPath = currentDirectory.getParent();
+            currentDirectory = parentPath ;
+        }
+        else if (Files.isDirectory(newPath)) {
             currentDirectory = newPath;
         } else {
             System.out.println("Directory not found: " + path);

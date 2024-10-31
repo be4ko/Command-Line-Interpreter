@@ -4,8 +4,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import java.util.Comparator;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
@@ -38,9 +36,9 @@ class MainTest {
     @Test
     void testLsA() {
         var cli = new Main();
-        String[] files = cli.ls();
+        String[] files = cli.ls("-a");
         assertTrue(files.length > 0, "The ls command should return the list of files in the directory.");
-        assertEquals(Arrays.toString(new String[]{".git", ".gitignore",". idea","pom.xml", "src","target"}), Arrays.toString(files), "The files should match the expected output.");
+        assertEquals(Arrays.toString(new String[]{".git", ".gitignore",".idea","pom.xml", "src","target"}), Arrays.toString(files), "The files should match the expected output.");
     }
 
     @Test
