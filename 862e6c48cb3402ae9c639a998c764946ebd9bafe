@@ -1,4 +1,35 @@
-[33mcommit cbe8f1d894ca33336e915aaaf29d933dcc85ee25[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+[33mcommit 7122fc77c95d9f3d1a864955f86d3648acf06a0a[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+Merge: d19c682 adc3237
+Author: be4ko <11410120210733@stud.cu.edu.eg>
+Date:   Sat Nov 9 16:40:03 2024 +0200
+
+    Merge branch 'main' of https://github.com/be4ko/Command-Line-Interpreter
+
+[33mcommit d19c6827243c1073c2fb3153523fc8397b579a12[m
+Author: be4ko <11410120210733@stud.cu.edu.eg>
+Date:   Sat Nov 9 16:39:50 2024 +0200
+
+    Final commit
+
+[33mcommit adc323709b747bab3a2c878eac077f7691bfd854[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: hossamabohadima <hossamabohadima@gmail.com>
+Date:   Tue Nov 5 22:15:11 2024 +0200
+
+    endo
+
+[33mcommit 7ab611e11a49fb4e63ebbfde6db1a7683e013513[m
+Author: hossamabohadima <hossamabohadima@gmail.com>
+Date:   Thu Oct 31 22:17:33 2024 +0300
+
+    last version
+
+[33mcommit 4795f44de6679033762f9164063b69c00255622c[m
+Author: hossamabohadima <hossamabohadima@gmail.com>
+Date:   Thu Oct 31 21:23:33 2024 +0300
+
+    cat
+
+[33mcommit cbe8f1d894ca33336e915aaaf29d933dcc85ee25[m
 Author: be4ko <11410120210733@stud.cu.edu.eg>
 Date:   Thu Oct 31 20:28:55 2024 +0300
 

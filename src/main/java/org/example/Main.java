@@ -68,54 +68,48 @@ public class Main {
     }
 
     public String[] ls() {
-        return listDirectory(false, false);
-    }
+        File dir = currentDirectory.toFile();
+        File[] filesArray;
+        filesArray = dir.listFiles((file) -> !file.getName().startsWith("."));
 
-    public void lstext(String[] command) {
-        var cli = new Main();
-        String option = command.length > 1 ? command[1] : "";
-        String[] lsOutput = cli.ls(option);
-
-        if (command.length >= 3
-                && (command[command.length - 2].equals(">") || command[command.length - 2].equals(">>"))) {
-            // Detect output redirection
-            String operator = command[command.length - 2];
-            String fileName = command[command.length - 1];
-            boolean append = operator.equals(">>");
-
-            try (BufferedWriter writer = new BufferedWriter(
-                    new FileWriter(new File(cli.currentDirectory.toFile(), fileName), append))) {
-                for (String line : lsOutput) {
-                    writer.write(line);
-                    writer.newLine();
-                }
-                System.out.println("Output written to " + fileName);
-            } catch (IOException e) {
-                System.out.println("Error: Unable to write to file " + fileName + ": " + e.getMessage());
-            }
-        } else {
-            // No redirection; print to console
-            System.out.println(String.join("\n", lsOutput));
+        assert filesArray != null;
+        String[] fileNames = new String[filesArray.length];
+        for (int i = 0; i < filesArray.length; i++) {
+            fileNames[i] = filesArray[i].getName();
         }
+        return fileNames;
     }
 
     public String[] ls(String option) {
-        boolean showHidden = "-a".equals(option);
-        boolean reverseOrder = "-r".equals(option);
-        return listDirectory(showHidden, reverseOrder);
-    }
+        File dir = currentDirectory.toFile();
+        File[] filesArray;
+        switch (option) {
+            case "-a":
+                filesArray = dir.listFiles();
+                break;
 
-    private String[] listDirectory(boolean showHidden, boolean reverseOrder) {
-        File[] filesArray = currentDirectory.toFile().listFiles(file -> showHidden || !file.getName().startsWith("."));
-        if (filesArray == null)
-            return new String[0];
+            case "-r":
+                filesArray = dir.listFiles();
+                if (filesArray != null) {
+                    Arrays.sort(filesArray, Collections.reverseOrder());
+                }
+                break;
+            default:
+                filesArray = dir.listFiles((file) -> !file.getName().startsWith("."));
+                if (filesArray != null) {
+                    Arrays.sort(filesArray);
+                }
+                break;
+        }
 
-        if (reverseOrder)
-            Arrays.sort(filesArray, Collections.reverseOrder());
-        else
-            Arrays.sort(filesArray);
+        assert filesArray != null;
 
-        return Arrays.stream(filesArray).map(File::getName).toArray(String[]::new);
+        // loop converts Array of files to array of String
+        String[] fileNames = new String[filesArray.length];
+        for (int i = 0; i < filesArray.length; i++) {
+            fileNames[i] = filesArray[i].getName();
+        }
+        return fileNames;
     }
 
     public boolean mv(String[] command) {
@@ -354,7 +348,13 @@ public class Main {
                         cli.cd(command.length > 1 ? command[1] : "");
                         break;
                     case "ls":
-                        cli.lstext(command);
+                        String[] files;
+                        if (command.length == 2) {
+                            files = cli.ls(command[1]);
+                        } else {
+                            files = cli.ls();
+                        }
+                        System.out.println(String.join("\n", files));
                         break;
 
                     case "mkdir":
